@@ -1,10 +1,12 @@
 import os
 import json
 
+import yaml
 import torch
-import torch.nn.functional as F
-import numpy as np
 import matplotlib
+import numpy as np
+import torch.nn.functional as F
+
 from scipy.io import wavfile
 from matplotlib import pyplot as plt
 
@@ -12,7 +14,15 @@ from matplotlib import pyplot as plt
 matplotlib.use("Agg")
 
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+def get_configs_of(dataset):
+    config_dir = os.path.join("./config", dataset)
+    preprocess_config = yaml.load(open(
+        os.path.join(config_dir, "preprocess.yaml"), "r"), Loader=yaml.FullLoader)
+    model_config = yaml.load(open(
+        os.path.join(config_dir, "model.yaml"), "r"), Loader=yaml.FullLoader)
+    train_config = yaml.load(open(
+        os.path.join(config_dir, "train.yaml"), "r"), Loader=yaml.FullLoader)
+    return preprocess_config, model_config, train_config
 
 
 def to_device(data, device):
@@ -93,7 +103,7 @@ def get_mask_from_lengths(lengths, max_len=None):
     if max_len is None:
         max_len = torch.max(lengths).item()
 
-    ids = torch.arange(0, max_len).unsqueeze(0).expand(batch_size, -1).to(device)
+    ids = torch.arange(0, max_len).unsqueeze(0).expand(batch_size, -1).to(lengths.device)
     mask = ids >= lengths.unsqueeze(1).expand(-1, max_len)
 
     return mask

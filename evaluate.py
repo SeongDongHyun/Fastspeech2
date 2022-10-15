@@ -1,21 +1,12 @@
-import argparse
-import os
-
 import torch
-import yaml
-import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from utils.model import get_model, get_vocoder
 from utils.tools import to_device, log, synth_one_sample
 from model import FastSpeech2Loss
 from dataset import Dataset
 
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-
-def evaluate(model, step, configs, logger=None, vocoder=None):
+def evaluate(device, model, step, configs, logger=None, vocoder=None, losses=None):
     preprocess_config, model_config, train_config = configs
 
     # Get dataset
@@ -34,24 +25,37 @@ def evaluate(model, step, configs, logger=None, vocoder=None):
     Loss = FastSpeech2Loss(preprocess_config, model_config).to(device)
 
     # Evaluation
-    loss_sums = [0 for _ in range(6)]
+    loss_sums = [{k:0 for k in loss.keys()} if isinstance(loss, dict) else 0 for loss in losses]
     for batchs in loader:
         for batch in batchs:
             batch = to_device(batch, device)
             with torch.no_grad():
                 # Forward
-                output = model(*(batch[2:]))
+                output = model(*(batch[2:]), step=step) # To do Step
 
                 # Cal Loss
-                losses = Loss(batch, output)
+                losses = Loss(batch, output, step=step)
 
                 for i in range(len(losses)):
-                    loss_sums[i] += losses[i].item() * len(batch[0])
+                    if isinstance(losses[i], dict):
+                        for k in loss_sums[i].keys():
+                            loss_sums[i][k] += losses[i][k].item() * len(batch[0])
+                    else:
+                        loss_sums[i] += losses[i].item() * len(batch[0])
 
-    loss_means = [loss_sum / len(dataset) for loss_sum in loss_sums]
+    loss_means = []
+    loss_means_ = []
+    for loss_sum in loss_sums:
+        if isinstance(loss_sum, dict):
+            loss_mean = {k:v / len(dataset) for k, v in loss_sum.items()}
+            loss_means.append(loss_mean)
+            loss_means_.append(sum(loss_mean.values()))
+        else:
+            loss_means.append(loss_sum / len(dataset))
+            loss_means_.append(loss_sum / len(dataset))
 
     message = "Validation Step {}, Total Loss: {:.4f}, Mel Loss: {:.4f}, Mel PostNet Loss: {:.4f}, Pitch Loss: {:.4f}, Energy Loss: {:.4f}, Duration Loss: {:.4f}".format(
-        *([step] + [l for l in loss_means])
+        *([step] + [l for l in loss_means_])
     )
 
     if logger is not None:

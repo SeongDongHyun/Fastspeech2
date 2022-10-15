@@ -16,7 +16,7 @@ class FastSpeech2Loss(nn.Module):
         self.mse_loss = nn.MSELoss()
         self.mae_loss = nn.L1Loss()
 
-    def forward(self, inputs, predictions):
+    def forward(self, inputs, predictions, step):
         (
             mel_targets,
             _,

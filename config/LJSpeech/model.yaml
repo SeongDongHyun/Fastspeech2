@@ -1,3 +1,5 @@
+block_type: "transformer"
+
 transformer:
   encoder_layer: 4
   encoder_head: 2

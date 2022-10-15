@@ -1,9 +1,14 @@
+seed: 1234
+dist_config:
+  dist_backend: "nccl"
+  dist_url: "tcp://localhost:54321"
+  world_size: 1
 path:
   ckpt_path: "./output/ckpt/LJSpeech"
   log_path: "./output/log/LJSpeech"
   result_path: "./output/result/LJSpeech"
 optimizer:
-  batch_size: 16
+  batch_size: 32
   betas: [0.9, 0.98]
   eps: 0.000000001
   weight_decay: 0.0
@@ -17,4 +22,4 @@ step:
   log_step: 100
   synth_step: 1000
   val_step: 1000
-  save_step: 100000
+  save_step: 50000

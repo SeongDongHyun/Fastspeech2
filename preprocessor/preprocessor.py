@@ -14,40 +14,42 @@ import audio as Audio
 
 
 class Preprocessor:
-    def __init__(self, config):
-        self.config = config
-        self.in_dir = config["path"]["raw_path"]
-        self.out_dir = config["path"]["preprocessed_path"]
-        self.val_size = config["preprocessing"]["val_size"]
-        self.sampling_rate = config["preprocessing"]["audio"]["sampling_rate"]
-        self.hop_length = config["preprocessing"]["stft"]["hop_length"]
+    def __init__(self, preprocess_config, model_config, train_config):
+        random.seed(train_config['seed'])
+        self.preprocess_config_config = preprocess_config
+        self.multi_speaker = model_config["multi_speaker"]
+        self.in_dir = preprocess_config["path"]["raw_path"]
+        self.out_dir = preprocess_config["path"]["preprocessed_path"]
+        self.val_size = preprocess_config["preprocessing"]["val_size"]
+        self.sampling_rate = preprocess_config["preprocessing"]["audio"]["sampling_rate"]
+        self.hop_length = preprocess_config["preprocessing"]["stft"]["hop_length"]
 
-        assert config["preprocessing"]["pitch"]["feature"] in [
+        assert preprocess_config["preprocessing"]["pitch"]["feature"] in [
             "phoneme_level",
             "frame_level",
         ]
-        assert config["preprocessing"]["energy"]["feature"] in [
+        assert preprocess_config["preprocessing"]["energy"]["feature"] in [
             "phoneme_level",
             "frame_level",
         ]
         self.pitch_phoneme_averaging = (
-            config["preprocessing"]["pitch"]["feature"] == "phoneme_level"
+            preprocess_config["preprocessing"]["pitch"]["feature"] == "phoneme_level"
         )
         self.energy_phoneme_averaging = (
-            config["preprocessing"]["energy"]["feature"] == "phoneme_level"
+            preprocess_config["preprocessing"]["energy"]["feature"] == "phoneme_level"
         )
 
-        self.pitch_normalization = config["preprocessing"]["pitch"]["normalization"]
-        self.energy_normalization = config["preprocessing"]["energy"]["normalization"]
+        self.pitch_normalization = preprocess_config["preprocessing"]["pitch"]["normalization"]
+        self.energy_normalization = preprocess_config["preprocessing"]["energy"]["normalization"]
 
         self.STFT = Audio.stft.TacotronSTFT(
-            config["preprocessing"]["stft"]["filter_length"],
-            config["preprocessing"]["stft"]["hop_length"],
-            config["preprocessing"]["stft"]["win_length"],
-            config["preprocessing"]["mel"]["n_mel_channels"],
-            config["preprocessing"]["audio"]["sampling_rate"],
-            config["preprocessing"]["mel"]["mel_fmin"],
-            config["preprocessing"]["mel"]["mel_fmax"],
+            preprocess_config["preprocessing"]["stft"]["filter_length"],
+            preprocess_config["preprocessing"]["stft"]["hop_length"],
+            preprocess_config["preprocessing"]["stft"]["win_length"],
+            preprocess_config["preprocessing"]["mel"]["n_mel_channels"],
+            preprocess_config["preprocessing"]["audio"]["sampling_rate"],
+            preprocess_config["preprocessing"]["mel"]["mel_fmin"],
+            preprocess_config["preprocessing"]["mel"]["mel_fmax"],
         )
 
     def build_from_path(self):

@@ -24,6 +24,11 @@ def get_configs_of(dataset):
         os.path.join(config_dir, "train.yaml"), "r"), Loader=yaml.FullLoader)
     return preprocess_config, model_config, train_config
 
+def get_decode_config(dataset):
+    config_dir = os.path.join("./config", dataset)
+    decode_config = yaml.load(open(
+        os.path.join(config_dir, "decode.yaml"), "r"), Loader=yaml.FullLoader)
+    return decode_config
 
 def to_device(data, device):
     if len(data) == 12:
@@ -338,3 +343,6 @@ def pad(input_ele, mel_max_length=None):
         out_list.append(one_batch_padded)
     out_padded = torch.stack(out_list)
     return out_padded
+
+if __name__ == "__main__":
+    get_configs_of("VCTK")

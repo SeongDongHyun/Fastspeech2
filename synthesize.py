@@ -210,6 +210,17 @@ if __name__ == "__main__":
         text_lens = np.array([len(texts[0])])
         batchs = [(ids, raw_texts, speakers, texts, text_lens, max(text_lens))]
 
+        # GST Reference Audio
+        if model_config["gst"]["use_gst"]:
+            from utils.tools import get_decode_config
+            decode_config = get_decode_config(args.dataset)
+            assert os.path.exists(decode_config["path"]["reference_audio"])
+
+            reference_mel = np.load(decode_config["path"]["reference_audio"])
+            reference_mel_len = np.array([len(reference_mel[0])])
+            batchs = [(ids, raw_texts, speakers, texts, text_lens, max(text_lens), 
+                reference_mel, reference_mel_len, max(reference_mel_len))]
+
     control_values = args.pitch_control, args.energy_control, args.duration_control
 
     synthesize(device, model, args, configs, vocoder, batchs, control_values)

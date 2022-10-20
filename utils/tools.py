@@ -171,7 +171,7 @@ def synth_one_sample(targets, predictions, vocoder, model_config, preprocess_con
     return fig, wav_reconstruction, wav_prediction, basename
 
 
-def synth_samples(targets, predictions, vocoder, model_config, preprocess_config, path):
+def synth_samples(targets, predictions, vocoder, model_config, preprocess_config, path, args):
 
     basenames = targets[0]
     for i in range(len(predictions[0])):
@@ -180,11 +180,13 @@ def synth_samples(targets, predictions, vocoder, model_config, preprocess_config
         mel_len = predictions[9][i].item()
         mel_prediction = predictions[1][i, :mel_len].detach().transpose(0, 1)
         duration = predictions[5][i, :src_len].detach().cpu().numpy()
+
         if preprocess_config["preprocessing"]["pitch"]["feature"] == "phoneme_level":
             pitch = predictions[2][i, :src_len].detach().cpu().numpy()
             pitch = expand(pitch, duration)
         else:
             pitch = predictions[2][i, :mel_len].detach().cpu().numpy()
+
         if preprocess_config["preprocessing"]["energy"]["feature"] == "phoneme_level":
             energy = predictions[3][i, :src_len].detach().cpu().numpy()
             energy = expand(energy, duration)

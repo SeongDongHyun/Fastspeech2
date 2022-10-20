@@ -33,17 +33,12 @@ You have to download the [pretrained models](https://drive.google.com/drive/fold
 
 For English single-speaker TTS, run
 ```
-python3 synthesize.py --text "YOUR_DESIRED_TEXT" --restore_step 900000 --mode single -p config/LJSpeech/preprocess.yaml -m config/LJSpeech/model.yaml -t config/LJSpeech/train.yaml
+python3 synthesize.py --text "YOUR_DESIRED_TEXT" --restore_step 200000 --mode single --dataset LJSpeech
 ```
 
-For Mandarin multi-speaker TTS, try
+For English Multi-speaker TTS, run
 ```
-python3 synthesize.py --text "大家好" --speaker_id SPEAKER_ID --restore_step 600000 --mode single -p config/AISHELL3/preprocess.yaml -m config/AISHELL3/model.yaml -t config/AISHELL3/train.yaml
-```
-
-For English multi-speaker TTS, run
-```
-python3 synthesize.py --text "YOUR_DESIRED_TEXT"  --speaker_id SPEAKER_ID --restore_step 800000 --mode single -p config/LibriTTS/preprocess.yaml -m config/LibriTTS/model.yaml -t config/LibriTTS/train.yaml
+python3 synthesize.py --text "YOUR_DESIRED_TEXT" --restore_step 1000000 --mode single --dataset VCTK
 ```
 
 The generated utterances will be put in ``output/result/``.

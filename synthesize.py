@@ -1,4 +1,5 @@
 import re
+import os
 import argparse
 from string import punctuation
 
@@ -10,11 +11,9 @@ from g2p_en import G2p
 from pypinyin import pinyin, Style
 
 from utils.model import get_model, get_vocoder
-from utils.tools import to_device, synth_samples
+from utils.tools import get_configs_of, to_device, synth_samples
 from dataset import TextDataset
 from text import text_to_sequence
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def read_lexicon(lex_path):
@@ -84,7 +83,7 @@ def preprocess_mandarin(text, preprocess_config):
     return np.array(sequence)
 
 
-def synthesize(model, step, configs, vocoder, batchs, control_values):
+def synthesize(device, model, args, configs, vocoder, batchs, control_values):
     preprocess_config, model_config, train_config = configs
     pitch_control, energy_control, duration_control = control_values
 
@@ -105,6 +104,7 @@ def synthesize(model, step, configs, vocoder, batchs, control_values):
                 model_config,
                 preprocess_config,
                 train_config["path"]["result_path"],
+                args,
             )
 
 
@@ -138,17 +138,10 @@ if __name__ == "__main__":
         help="speaker ID for multi-speaker synthesis, for single-sentence mode only",
     )
     parser.add_argument(
-        "-p",
-        "--preprocess_config",
+        "--dataset",
         type=str,
         required=True,
-        help="path to preprocess.yaml",
-    )
-    parser.add_argument(
-        "-m", "--model_config", type=str, required=True, help="path to model.yaml"
-    )
-    parser.add_argument(
-        "-t", "--train_config", type=str, required=True, help="path to train.yaml"
+        help="name of dataset",
     )
     parser.add_argument(
         "--pitch_control",
@@ -177,12 +170,19 @@ if __name__ == "__main__":
         assert args.source is None and args.text is not None
 
     # Read Config
-    preprocess_config = yaml.load(
-        open(args.preprocess_config, "r"), Loader=yaml.FullLoader
-    )
-    model_config = yaml.load(open(args.model_config, "r"), Loader=yaml.FullLoader)
-    train_config = yaml.load(open(args.train_config, "r"), Loader=yaml.FullLoader)
+    preprocess_config, model_config, train_config = get_configs_of(args.dataset)
     configs = (preprocess_config, model_config, train_config)
+    os.makedirs(
+        os.path.join(train_config["path"]["result_path"], str(args.restore_step)), exist_ok=True)
+
+    # Set Device
+    torch.manual_seed(train_config["seed"])
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(train_config["seed"])
+        device = torch.device("cuda")
+    else:
+        device = torch.device("cpu")
+    print(f"Device of TTS: {device}")
 
     # Get model
     model = get_model(args, configs, device, train=False)
@@ -206,9 +206,21 @@ if __name__ == "__main__":
             texts = np.array([preprocess_english(args.text, preprocess_config)])
         elif preprocess_config["preprocessing"]["text"]["language"] == "zh":
             texts = np.array([preprocess_mandarin(args.text, preprocess_config)])
+
         text_lens = np.array([len(texts[0])])
         batchs = [(ids, raw_texts, speakers, texts, text_lens, max(text_lens))]
 
+        # GST Reference Audio
+        if model_config["gst"]["use_gst"]:
+            from utils.tools import get_decode_config
+            decode_config = get_decode_config(args.dataset)
+            assert os.path.exists(decode_config["path"]["reference_audio"])
+
+            reference_mel = np.load(decode_config["path"]["reference_audio"])
+            reference_mel_len = np.array([len(reference_mel[0])])
+            batchs = [(ids, raw_texts, speakers, texts, text_lens, max(text_lens), 
+                reference_mel, reference_mel_len, max(reference_mel_len))]
+
     control_values = args.pitch_control, args.energy_control, args.duration_control
 
-    synthesize(model, args.restore_step, configs, vocoder, batchs, control_values)
+    synthesize(device, model, args, configs, vocoder, batchs, control_values)

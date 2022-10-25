@@ -1,8 +1,7 @@
 import argparse
 
-import yaml
-
-from preprocessor import ljspeech, aishell3, libritts
+from utils.tools import get_configs_of
+from preprocessor import ljspeech, aishell3, libritts, vctk
 
 
 def main(config):
@@ -12,12 +11,19 @@ def main(config):
         aishell3.prepare_align(config)
     if "LibriTTS" in config["dataset"]:
         libritts.prepare_align(config)
+    if "VCTK" in config["dataset"]:
+        vctk.prepare_align(config)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("config", type=str, help="path to preprocess.yaml")
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        required=True,
+        help="name of dataset",
+    )
     args = parser.parse_args()
 
-    config = yaml.load(open(args.config, "r"), Loader=yaml.FullLoader)
+    config, *_ = get_configs_of(args.dataset)
     main(config)

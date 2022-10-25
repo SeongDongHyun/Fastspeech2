@@ -24,6 +24,11 @@ def get_configs_of(dataset):
         os.path.join(config_dir, "train.yaml"), "r"), Loader=yaml.FullLoader)
     return preprocess_config, model_config, train_config
 
+def get_decode_config(dataset):
+    config_dir = os.path.join("./config", dataset)
+    decode_config = yaml.load(open(
+        os.path.join(config_dir, "decode.yaml"), "r"), Loader=yaml.FullLoader)
+    return decode_config
 
 def to_device(data, device):
     if len(data) == 12:
@@ -74,6 +79,17 @@ def to_device(data, device):
         src_lens = torch.from_numpy(src_lens).to(device)
 
         return (ids, raw_texts, speakers, texts, src_lens, max_src_len)
+
+    if len(data) == 9:
+        (ids, raw_texts, speakers, texts, src_lens, max_src_len, mel, mel_len, max_mel_len) = data
+
+        speakers = torch.from_numpy(speakers).long().to(device)
+        texts = torch.from_numpy(texts).long().to(device)
+        src_lens = torch.from_numpy(src_lens).to(device)
+        mel = torch.from_numpy(mel).float().to(device)
+        mel_len = torch.from_numpy(mel_len).to(device)
+
+        return (ids, raw_texts, speakers, texts, src_lens, max_src_len, mel, mel_len, max_mel_len)
 
 
 def log(
@@ -171,7 +187,7 @@ def synth_one_sample(targets, predictions, vocoder, model_config, preprocess_con
     return fig, wav_reconstruction, wav_prediction, basename
 
 
-def synth_samples(targets, predictions, vocoder, model_config, preprocess_config, path):
+def synth_samples(targets, predictions, vocoder, model_config, preprocess_config, path, args):
 
     basenames = targets[0]
     for i in range(len(predictions[0])):
@@ -180,11 +196,13 @@ def synth_samples(targets, predictions, vocoder, model_config, preprocess_config
         mel_len = predictions[9][i].item()
         mel_prediction = predictions[1][i, :mel_len].detach().transpose(0, 1)
         duration = predictions[5][i, :src_len].detach().cpu().numpy()
+
         if preprocess_config["preprocessing"]["pitch"]["feature"] == "phoneme_level":
             pitch = predictions[2][i, :src_len].detach().cpu().numpy()
             pitch = expand(pitch, duration)
         else:
             pitch = predictions[2][i, :mel_len].detach().cpu().numpy()
+
         if preprocess_config["preprocessing"]["energy"]["feature"] == "phoneme_level":
             energy = predictions[3][i, :src_len].detach().cpu().numpy()
             energy = expand(energy, duration)

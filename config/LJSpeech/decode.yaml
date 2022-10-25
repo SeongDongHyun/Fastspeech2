@@ -1,0 +1,2 @@
+path:
+  reference_audio: ./preprocessed_data/LJSpeech/mel/LJSpeech-mel-LJ001-0029.npy

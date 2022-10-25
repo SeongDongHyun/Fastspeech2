@@ -9,6 +9,7 @@ from transformer import Encoder, Decoder, PostNet
 from .modules import VarianceAdaptor
 from utils.tools import get_mask_from_lengths
 
+from .gst.style_encoder import StyleEncoder
 
 class FastSpeech2(nn.Module):
     """ FastSpeech2 """
@@ -38,6 +39,21 @@ class FastSpeech2(nn.Module):
             self.speaker_emb = nn.Embedding(
                 n_speaker,
                 model_config["transformer"]["encoder_hidden"],
+            )
+
+        # GST
+        if model_config["gst"]["use_gst"]:
+            self.gst = StyleEncoder(
+                idim=model_config["gst"]["n_mel_channels"],
+                gst_tokens=model_config["gst"]["gst_tokens"],
+                gst_token_dim=model_config["gst"]["gst_token_dim"],
+                gst_heads=model_config["gst"]["gst_heads"],
+                conv_layers=model_config["gst"]["gst_conv_layers"],
+                conv_chans_list=model_config["gst"]["gst_conv_chans_list"],
+                conv_kernel_size=model_config["gst"]["gst_conv_kernel_size"],
+                conv_stride=model_config["gst"]["gst_conv_stride"],
+                gru_layers=model_config["gst"]["gst_gru_layers"],
+                gru_units=model_config["gst"]["gst_gru_units"],
             )
 
     def forward(
@@ -70,6 +86,14 @@ class FastSpeech2(nn.Module):
             output = output + self.speaker_emb(speakers).unsqueeze(1).expand(
                 -1, max_src_len, -1
             )
+
+        # GST
+        if self.model_config["gst"]["use_gst"]:
+            # Inference 일때 실행해야함
+            if len(mels.shape) == 2:
+                mels = mels.unsqueeze(0)
+            style_embs = self.gst(mels)
+            output = output + style_embs.unsqueeze(1)
 
         (
             output,

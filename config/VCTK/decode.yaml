@@ -1,0 +1,2 @@
+path:
+  reference_audio: ./preprocessed_data/VCTK/mel/p226-mel-p226_007.npy

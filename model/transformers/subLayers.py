@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 
-from .Modules import ScaledDotProductAttention
+from .modules import ScaledDotProductAttention
 
 
 class MultiHeadAttention(nn.Module):

@@ -5,7 +5,7 @@ import torch.nn as nn
 import numpy as np
 from torch.nn import functional as F
 
-from .SubLayers import MultiHeadAttention, PositionwiseFeedForward
+from .subLayers import MultiHeadAttention, PositionwiseFeedForward
 
 
 class FFTBlock(torch.nn.Module):

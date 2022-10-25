@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-import transformer.Constants as Constants
-from .Layers import FFTBlock
+from .constants import PAD
+from .layers import FFTBlock
 from text.symbols import symbols
 
 
@@ -54,7 +54,7 @@ class Encoder(nn.Module):
         self.d_model = d_model
 
         self.src_word_emb = nn.Embedding(
-            n_src_vocab, d_word_vec, padding_idx=Constants.PAD
+            n_src_vocab, d_word_vec, padding_idx=PAD
         )
         self.position_enc = nn.Parameter(
             get_sinusoid_encoding_table(n_position, d_word_vec).unsqueeze(0),

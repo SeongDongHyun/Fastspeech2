@@ -88,6 +88,16 @@ We take LJSpeech as an example hereafter.
   Pre-extracted alignments for the datasets are provided [here](https://drive.google.com/drive/folders/1fizpyOiQ1lG2UDaMlXnT3Ll4_j6Xwg7K?usp=sharing). 
   You have to unzip the files in `preprocessed_data/DATASET/TextGrid/`. Alternately, you can [run the aligner by yourself](https://montreal-forced-aligner.readthedocs.io/en/latest/user_guide/workflows/index.html).
 
+  MFA Setting
+  ```
+  conda create -n mfa -c conda-forge montreal-forced-aligner
+  ```
+
+  MFA Training
+  '''
+  python3 prepare_mfa.py --dataset DATASET
+  '''
+
   After that, run the preprocessing script by
   ```
   python3 preprocess.py --dataset DATASET

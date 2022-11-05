@@ -24,6 +24,11 @@ On the other hand, pitch spectrograms extracted by continuous wavelet transform 
 # Quickstart
 
 ## Dependencies
+- Ubuntu = 18.04
+- python = 3.8
+- torch = 1.7
+- cuda = 10.2
+
 You can install the Python dependencies with
 ```
 pip3 install -r requirements.txt

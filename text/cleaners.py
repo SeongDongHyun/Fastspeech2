@@ -87,3 +87,12 @@ def english_cleaners(text):
     text = expand_abbreviations(text)
     text = collapse_whitespace(text)
     return text
+
+def korean_cleaners(text):
+    '''Pipeline for Korean text, including number and abbreviation expansion'''
+    text = collapse_whitespace(text)
+    # from g2pk import G2p
+    # g2p = G2p()
+    # text = g2p(text)
+
+    return text

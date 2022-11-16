@@ -5,14 +5,12 @@ import re
 import os
 import ast
 import json
-from quickspacer import Spacer
 from g2pk import G2p
 from jamo import hangul_to_jamo, h2j, j2h
 from jamo.jamo import _jamo_char_to_hcj
 from .korean_dict import JAMO_LEADS, JAMO_VOWELS, JAMO_TAILS, ko_dict
 
 g2p=G2p()
-spacer = Spacer(level=3)
 
 
 def tokenize(text, norm=True):
@@ -107,7 +105,6 @@ def normalize(text):
     text = normalize_quote(text)
     text = normalize_number(text)
     text = normalize_nonchar(text)
-    text = spacer.space([text])[0]
 
     return text
 

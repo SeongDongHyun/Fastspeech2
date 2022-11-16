@@ -17,6 +17,7 @@ hyperparameter. Some cleaners are English-specific. You'll typically want to use
 import re
 from unidecode import unidecode
 from .numbers import normalize_numbers
+from .korean import normalize
 _whitespace_re = re.compile(r'\s+')
 
 # List of (regular expression, replacement) pairs for abbreviations:
@@ -88,11 +89,9 @@ def english_cleaners(text):
     text = collapse_whitespace(text)
     return text
 
-def korean_cleaners(text):
-    '''Pipeline for Korean text, including number and abbreviation expansion'''
-    text = collapse_whitespace(text)
-    # from g2pk import G2p
-    # g2p = G2p()
-    # text = g2p(text)
 
+def korean_cleaners(text):
+    '''Pipeline for Korean (Hangul) text, including number and abbreviation expansion.'''
+    text = normalize(text)
+    text = collapse_whitespace(text)
     return text

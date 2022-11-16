@@ -7,6 +7,8 @@ from scipy.io import wavfile
 from tqdm import tqdm
 
 from text import _clean_text
+from g2pk import G2p
+from jamo import h2j
 
 def prepare_align(config):
     '''
@@ -30,6 +32,7 @@ def prepare_align(config):
     with open(os.path.join(in_dir, "transcript.v.1.4.txt"), encoding="utf-8") as fr:
         lines = [lines.strip() for lines in fr.readlines()]
 
+    g2p = G2p()
     for line in tqdm(lines, total=len(lines)):
         parts = line.strip().split("|")
         base_name = parts[0][:-4]
@@ -40,6 +43,7 @@ def prepare_align(config):
         filters = '([.,!?])"'
         text = re.sub(re.compile(filters), '', text)
         text = _clean_text(text, cleaners)
+        text = h2j(g2p(text))
 
         wav_path = os.path.join(in_dir, "wav", "{}.wav".format(base_name))
         if os.path.exists(wav_path):

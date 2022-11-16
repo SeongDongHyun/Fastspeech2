@@ -18,8 +18,9 @@ def mfa_align(config):
             if phoneme not in phoneme_dict:
                 phoneme_dict[phoneme] = ' '.join(phoneme_list[i])
 
-    dict_name = os.path.join(config["path"]["raw_path"], 'korean_dict.txt')
-    with open(dict_name, 'w', encoding='utf-8') as fw:
+    os.makedirs(config["path"]["mfa_path"], exist_ok=True)
+    dict_txt = os.path.join(config["path"]["mfa_path"], 'korean_dict.txt')
+    with open(dict_txt, 'w', encoding='utf-8') as fw:
         for key in phoneme_dict.keys():
             content = '{}\t{}\n'.format(key, phoneme_dict[key])
             fw.write(content)
@@ -33,9 +34,11 @@ def mfa_train(config):
     if not os.path.isdir(dataset):
         print(f'No exist dataset folder: {dataset}')
     else:
-        dict_txt = os.path.join(config["path"]["raw_path"], 'korean_dict.txt')
-        g2p_model_output = os.path.join(config["path"]["raw_path"], 'korean.zip')
-        g2p_dict_txt = os.path.join(config["path"]["raw_path"], 'korean.txt')
+        # Path Setting && Make Folder
+        os.makedirs(config["path"]["mfa_path"], exist_ok=True)
+        dict_txt = os.path.join(config["path"]["mfa_path"], 'korean_dict.txt')
+        g2p_model_output = os.path.join(config["path"]["mfa_path"], 'korean.zip')
+        g2p_dict_txt = os.path.join(config["path"]["mfa_path"], 'korean.txt')
         text_gird_folder = os.path.join(config["path"]["preprocessed_path"], 'TextGrid')
 
         # g2p train

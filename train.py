@@ -1,6 +1,5 @@
 import os
 import argparse
-from tokenize import group
 
 import torch
 import numpy as np
@@ -86,6 +85,7 @@ def train(rank, args, configs, batch_size, num_gpus):
         outer_bar.update()
 
     train = True
+    model.train()
     while train:
         if rank == 0:
             inner_bar = tqdm(total=len(loader), desc="Epoch {}".format(epoch), position=1)

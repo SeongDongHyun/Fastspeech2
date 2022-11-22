@@ -40,6 +40,7 @@ def mfa_train(config):
         g2p_model_output = os.path.join(config["path"]["mfa_path"], 'korean.zip')
         g2p_dict_txt = os.path.join(config["path"]["mfa_path"], 'korean.txt')
         text_gird_folder = os.path.join(config["path"]["preprocessed_path"], 'TextGrid')
+        mfa_model = os.path.join(config["path"]["mfa_path"], 'korean_mfa')
 
         # g2p train
         ## require text_full(aggregate), g2p model output path
@@ -58,7 +59,7 @@ def mfa_train(config):
         ### Model output path -o {path}
         os.makedirs(text_gird_folder, exist_ok=True)
         print('MFA Train Start!')
-        os.system(f'mfa train {dataset} {dict_txt} {text_gird_folder} --clean')
+        os.system(f'mfa train {dataset} {dict_txt} {text_gird_folder} -o {mfa_model} --clean')
         print('MFA Train Finish!')
 
 

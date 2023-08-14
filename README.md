@@ -108,6 +108,11 @@ We take LJSpeech as an example hereafter.
   ```
   python3 prepare_mfa.py --dataset DATASET
   ```
+  MFA ENG Ver.
+  mfa align [corpus_directory] [dictionary_path] [acoustic_model] [output_directory]
+  ```
+  mfa align raw_data/LJSpeech/ lexicon/librispeech-lexicon.txt english_us_arpa TextGrid --clean
+  ```
 
   After that, run the preprocessing script by
   ```

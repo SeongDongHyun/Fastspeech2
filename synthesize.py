@@ -14,7 +14,9 @@ from utils.model import get_model, get_vocoder
 from utils.tools import get_configs_of, to_device, synth_samples
 from dataset import TextDataset
 from text import text_to_sequence
+from text.korean import tokenize, normalize_nonchar
 
+import time
 
 def read_lexicon(lex_path):
     lexicon = {}
@@ -26,6 +28,30 @@ def read_lexicon(lex_path):
             if word.lower() not in lexicon:
                 lexicon[word.lower()] = phones
     return lexicon
+
+def preprocess_korean(text, preprocess_config):
+    lexicon = read_lexicon(preprocess_config["path"]["lexicon_path"])
+
+    phones = []
+    words = filter(None, re.split(r"([,;.\-\?\!\s+])", text))
+    for w in words:
+        # if w in lexicon:
+        #     phones += lexicon[w]
+        # else:
+        phones += list(filter(lambda p: p != " ", tokenize(w, norm=False)))
+    phones = "{" + "}{".join(phones) + "}"
+    phones = normalize_nonchar(phones, inference=True)
+    phones = phones.replace("}{", " ")
+
+    print("Raw Text Sequence: {}".format(text))
+    print("Phoneme Sequence: {}".format(phones))
+    sequence = np.array(
+        text_to_sequence(
+            phones, preprocess_config["preprocessing"]["text"]["text_cleaners"]
+        )
+    )
+
+    return np.array(sequence)
 
 
 def preprocess_english(text, preprocess_config):
@@ -206,6 +232,8 @@ if __name__ == "__main__":
             texts = np.array([preprocess_english(args.text, preprocess_config)])
         elif preprocess_config["preprocessing"]["text"]["language"] == "zh":
             texts = np.array([preprocess_mandarin(args.text, preprocess_config)])
+        elif preprocess_config["preprocessing"]["text"]["language"] == "kr":
+            texts = np.array([preprocess_korean(args.text, preprocess_config)])
 
         text_lens = np.array([len(texts[0])])
         batchs = [(ids, raw_texts, speakers, texts, text_lens, max(text_lens))]
@@ -223,4 +251,7 @@ if __name__ == "__main__":
 
     control_values = args.pitch_control, args.energy_control, args.duration_control
 
+    start = time.time()
     synthesize(device, model, args, configs, vocoder, batchs, control_values)
+    end = time.time()
+    print(f'Total_time: {end - start}')

@@ -1,10 +1,11 @@
 dataset: "kss"
 
 path:
-  corpus_path: "/home/dhseong/work/data/kr/kss"
-  raw_path: "./raw_data/kss"
-  preprocessed_path: "./preprocessed_data/kss"
+  corpus_path: "/home/dhseong/work/data/kr/kss_22050"
+  raw_path: "./raw_data/kss_g2pk"
+  preprocessed_path: "./preprocessed_data/kss_g2pk"
   mfa_path: "./raw_data/kss_mfa"
+  lexicon_path: "lexicon/korean.txt"
 
 preprocessing:
   val_size: 512
